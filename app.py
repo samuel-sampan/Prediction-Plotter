@@ -1,8 +1,10 @@
 from taipy.gui import Gui
 import numpy as np
+from database import save_entry
 
 # Analysis methods
-analysis_methods = ["Bayesian Inference", "Moving Average", "Exponential Smoothing", "Polynomial Regression"]
+analysis_methods = ["Bayesian Inference", "Moving Average",
+                    "Exponential Smoothing", "Polynomial Regression"]
 selection = []
 
 # Data storage
@@ -13,8 +15,7 @@ current_value = 0
 # Chart data in Taipy format
 chart_data = {"Entry Number": [], "Value": [], "Type": []}
 
-
-# ---------- Prediction Functions ----------
+# Prediction Functions
 def bayesian_linear_regression(x, y, x_predict):
     if len(x) < 2:
         return None
@@ -55,7 +56,7 @@ def polynomial_regression(x, y, x_predict, degree=2):
     return poly(x_predict)
 
 
-# ---------- Core Logic ----------
+#  Core Logic
 def update_chart(state):
     entry_numbers = state.x_vals.copy()
     values = state.y_vals.copy()
@@ -66,28 +67,32 @@ def update_chart(state):
         x_predict = np.array([last_x + i for i in range(1, 11)])
 
         if "Bayesian Inference" in state.selection:
-            predictions = bayesian_linear_regression(state.x_vals, state.y_vals, x_predict)
+            predictions = bayesian_linear_regression(
+                state.x_vals, state.y_vals, x_predict)
             if predictions is not None:
                 entry_numbers.extend(x_predict.tolist())
                 values.extend(predictions.tolist())
                 types.extend(["Bayesian Inference"] * 10)
 
         if "Moving Average" in state.selection:
-            predictions = moving_average(state.x_vals, state.y_vals, x_predict, window=3)
+            predictions = moving_average(
+                state.x_vals, state.y_vals, x_predict, window=3)
             if predictions is not None:
                 entry_numbers.extend(x_predict.tolist())
                 values.extend(predictions.tolist())
                 types.extend(["Moving Average"] * 10)
 
         if "Exponential Smoothing" in state.selection:
-            predictions = exponential_smoothing(state.x_vals, state.y_vals, x_predict, alpha=0.3)
+            predictions = exponential_smoothing(
+                state.x_vals, state.y_vals, x_predict, alpha=0.3)
             if predictions is not None:
                 entry_numbers.extend(x_predict.tolist())
                 values.extend(predictions.tolist())
                 types.extend(["Exponential Smoothing"] * 10)
 
         if "Polynomial Regression" in state.selection:
-            predictions = polynomial_regression(state.x_vals, state.y_vals, x_predict, degree=2)
+            predictions = polynomial_regression(
+                state.x_vals, state.y_vals, x_predict, degree=2)
             if predictions is not None:
                 entry_numbers.extend(x_predict.tolist())
                 values.extend(predictions.tolist())
@@ -101,8 +106,18 @@ def update_chart(state):
 
 
 def add_point(state):
+    """Triggered when user clicks the button."""
+    print(f"Button clicked! Current value: {state.current_value}")
+    print(f"Before - x_vals: {state.x_vals}, y_vals: {state.y_vals}")
+    
     state.x_vals.append(len(state.x_vals) + 1)
     state.y_vals.append(state.current_value)
+    
+    # Save to database (anonymous - no user ID)
+    save_entry(len(state.x_vals), state.current_value)
+    
+    print(f"After - x_vals: {state.x_vals}, y_vals: {state.y_vals}")
+    
     update_chart(state)
 
 
@@ -117,7 +132,7 @@ def on_selection_change(state):
     update_chart(state)
 
 
-# ---------- GUI Layout ----------
+# GUI Layout
 page = """
 # Prediction Plotter
 
@@ -135,6 +150,7 @@ page = """
 """
 
 # Run the app
+
 import os
 from taipy.gui import Gui
 
