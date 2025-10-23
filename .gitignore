@@ -1,22 +1,20 @@
-Python
+# Environment variables (basically the juicy data)
+.env
 
-pycache/
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
 *.pyc
-*.pyo
-*.pyd
-.Python
+.venv/
 venv/
-env/
 
-Taipy specific files/folders
-
-These contain generated configuration, logs, and user-specific data
-
-.taipy/
-taipy.log
-
-Operating System/IDE files
-
-.DS_Store
-.idea/
+# IDE
 .vscode/
+.idea/
+
+# OS
+.DS_Store
