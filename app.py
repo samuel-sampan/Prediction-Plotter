@@ -135,5 +135,10 @@ page = """
 """
 
 # Run the app
+import os
+from taipy.gui import Gui
+
 if __name__ == "__main__":
-    Gui(page=page).run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    gui = Gui(page=page)
+    gui.run(host="0.0.0.0", port=port, use_reloader=False)
