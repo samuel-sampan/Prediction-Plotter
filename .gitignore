@@ -1,4 +1,4 @@
-# Environment variables (basically the juicy data)
+# Environment variables
 .env
 
 # Database files
