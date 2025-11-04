@@ -2,9 +2,9 @@ from taipy.gui import Gui
 import numpy as np
 from database import save_entry
 
-
+# -----------------------
 # Analysis methods
-
+# -----------------------
 analysis_methods = ["Bayesian Inference", "Moving Average",
                     "Exponential Smoothing", "Polynomial Regression"]
 selection = []
@@ -13,17 +13,16 @@ selection = []
 x_vals = []
 y_vals = []
 current_value = 0
-
-# Chart data in Taipy format
 chart_data = {"Entry Number": [], "Value": [], "Type": []}
 
-# Legal consent popup thingy
-show_disclaimer = True  # Show at startup
-user_accepted = False   # Track acceptance state
+# Legal acceptance state
+show_disclaimer = True
+user_accepted = False
 
 
+# -----------------------
 # Prediction Functions
-
+# -----------------------
 def bayesian_linear_regression(x, y, x_predict):
     if len(x) < 2:
         return None
@@ -64,8 +63,9 @@ def polynomial_regression(x, y, x_predict, degree=2):
     return poly(x_predict)
 
 
+# -----------------------
 # Core Logic
-
+# -----------------------
 def update_chart(state):
     entry_numbers = state.x_vals.copy()
     values = state.y_vals.copy()
@@ -118,8 +118,6 @@ def add_point(state):
     if not state.user_accepted:
         state.show_disclaimer = True
         return
-
-    print(f"Button clicked! Current value: {state.current_value}")
     state.x_vals.append(len(state.x_vals) + 1)
     state.y_vals.append(state.current_value)
     save_entry(len(state.x_vals), state.current_value)
@@ -141,22 +139,40 @@ def accept_terms(state):
     state.user_accepted = True
 
 
+# -----------------------
 # GUI Layout
-
-page = """
+# -----------------------
+page = r"""
 # Prediction Plotter
 
-<|part|render={show_disclaimer}|
-<|layout|columns=1|
-### ⚠️ Disclaimer
-This tool is provided for educational and experimental purposes only.  
-By continuing, you acknowledge and agree that:
-- All data entered may be **anonymized and stored** for research and model improvement.
-- The predictions shown are **not guaranteed** and should not be interpreted as financial or factual forecasts.
-- The creators are **not liable** for decisions made based on the tool’s output.
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('userAccepted') === 'true') {
+        tp.setState('user_accepted', true);
+        tp.setState('show_disclaimer', false);
+    }
+});
+function acceptDisclaimer() {
+    localStorage.setItem('userAccepted', 'true');
+    tp.setState('user_accepted', true);
+    tp.setState('show_disclaimer', false);
+}
+</script>
 
-<|I Accept|button|on_action=accept_terms|class=accept-btn|>
-|>
+<|part|render={show_disclaimer}|
+<div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-color: rgba(0, 0, 0, 0.65); display: flex; justify-content: center;
+    align-items: center; z-index: 9999;">
+  <div style="background-color: white; padding: 30px; border-radius: 15px; max-width: 500px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+    <h3>⚠️ Disclaimer</h3>
+    <p>This tool is provided for educational and experimental purposes only.<br><br>
+    By continuing, you acknowledge and agree that:<br>
+    • Your data may be <b>anonymized and stored</b> for research and model improvement.<br>
+    • Predictions are <b>not guaranteed</b> and should not be used for real-world decision-making.<br>
+    • The creators are <b>not liable</b> for any decisions made based on the tool’s output.</p>
+    <button onclick="acceptDisclaimer()" style="background-color:#0078D7; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">I Accept</button>
+  </div>
+</div>
 |>
 
 <|layout|columns=2 1 1|
@@ -172,9 +188,9 @@ By continuing, you acknowledge and agree that:
 <|{selection}|selector|lov={analysis_methods}|multiple|on_change=on_selection_change|>
 """
 
-
+# -----------------------
 # Run App
-
+# -----------------------
 import os
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
